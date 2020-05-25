@@ -1,12 +1,26 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-var server_port = process.env.YOUR_PORT || process.env.PORT || 80;
-var server_host = process.env.YOUR_HOST || '0.0.0.0';
-server.listen(server_port, server_host, function() {
+// Keep server running on Heroku
+var server_port = process.env.PORT || 80;
+var server_host = '0.0.0.0';
+var http = require('http');
+http.createServer(function (req, res) {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write('Server is up!');
+    res.end();
+}).listen(server_port, server_host, function() {
     console.log('Listening on port %d', server_port);
 });
+var requestify = require('requestify');
+setInterval(() => {
+    requestify.get(process.env.UPKEEP_URL).then(function(response) {
+        console.log("Upkeep request: ", response.getBody());
+    });
+}, 10000);
 
+
+// Init facebook bot
 const login = require("facebook-chat-api");
 const GIFEncoder = require('gifencoder');
 var Canvas = require('canvas')

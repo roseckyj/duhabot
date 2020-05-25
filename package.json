@@ -12,6 +12,7 @@
     "dotenv": "^8.2.0",
     "facebook-chat-api": "^1.8.0",
     "gifencoder": "^2.0.1",
-    "png-file-stream": "^1.2.1"
+    "png-file-stream": "^1.2.1",
+    "requestify": "^0.2.5"
   }
 }
