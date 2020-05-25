@@ -1,0 +1,16 @@
+{
+  "name": "duhabot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "author": "",
+  "dependencies": {
+    "facebook-chat-api": "^1.8.0",
+    "gifencoder": "^2.0.1",
+    "png-file-stream": "^1.2.1"
+  }
+}
