@@ -1,3 +1,6 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const login = require("facebook-chat-api");
 const GIFEncoder = require('gifencoder');
 var Canvas = require('canvas')
@@ -9,8 +12,12 @@ const HEIGHT = 376;
 const FRAMES = 7;
 const PREDICTIONS = 6;
 
+const upSince = new Date();
+
 login({email: process.env.EMAIL, password: process.env.PASSWORD}, (err, api) => {
     if(err) return console.error(err);
+
+    sendLogMessage(api, "Server is up!");
 
     api.listenMqtt((err, message) => {
         if (message.type == "message") {
@@ -21,6 +28,10 @@ login({email: process.env.EMAIL, password: process.env.PASSWORD}, (err, api) => 
                 } else {
                     createRadarImage(message, api);
                 }
+            }
+
+            if (message.body.startsWith("!status") && message.threadID === process.env.LOG_THREAD_ID) {
+                sendStatus(api);
             }
         }
     });
@@ -85,11 +96,7 @@ async function createRadarImage(message, api) {
     const onerror = () => {
         if (images.length > FRAMES * 2) {
             if (!errorMessageSent) {
-                console.warn("Remote server error, sending error message...");
-                var msg = {
-                    body: "Došlo k chybě serveru poskytujícího radarové snímky... zkus to znovu za chvíli :)"
-                }
-                api.sendMessage(msg, message.threadID);
+                sendErrorMessage(api, message.threadID, "createRadarImage - remote server error");
                 errorMessageSent = true;
             }
         } else {
@@ -128,11 +135,7 @@ async function createRadarPredictionImage(message, api) {
 
     const onerror = () => {
         if (!errorMessageSent) {
-            console.warn("Remote server error, sending error message...");
-            var msg = {
-                body: "Došlo k chybě serveru poskytujícího radarové snímky... zkus to znovu za chvíli :)"
-            }
-            api.sendMessage(msg, message.threadID);
+            sendErrorMessage(api, message.threadID, "createRadarPredictionImage - remote server error");
             errorMessageSent = true;
         }
     }
@@ -178,4 +181,37 @@ async function finishGifCreation(message, api, images, bg, title) {
         api.sendMessage(msg, message.threadID);
         console.log("Radar image sent!");
     }, 500)
+}
+
+function sendLogMessage(api, message) {
+    console.log(message);
+
+    if (process.env.LOG_THREAD_ID) {
+        const debugMsg = {
+            body: "*[LOG]* " + message
+        }
+        api.sendMessage(debugMsg, process.env.LOG_THREAD_ID);
+    }
+}
+
+function sendErrorMessage(api, threadId, message) {
+    console.warn(message);
+    const msg = {
+        body: "Jejda, něco se pokazilo, zkus to prosím za chvíli :)"
+    }
+    api.sendMessage(msg, threadID);
+
+    if (process.env.LOG_THREAD_ID) {
+        const debugMsg = {
+            body: "*[ERR]* " + message
+        }
+        api.sendMessage(debugMsg, process.env.LOG_THREAD_ID);
+    }
+}
+
+function sendStatus(api) {
+    const debugMsg = {
+        body: "*System is up* since " + upSince.toUTCString()
+    }
+    api.sendMessage(debugMsg, process.env.LOG_THREAD_ID);
 }
