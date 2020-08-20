@@ -16,6 +16,8 @@ login({email: process.env.EMAIL, password: process.env.PASSWORD}, (err, api) => 
     if(err) return console.error(err);
     admin.log(api, "Server is up (" + process.env.UPKEEP_URL + ")");
 
+    api.setOptions({selfListen: true});
+
     api.listenMqtt((err, message) => {
         if (message.type == "message") {
 
