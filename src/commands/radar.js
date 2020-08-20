@@ -138,10 +138,18 @@ async function finishGifCreation(message, api, images, bg, title) {
     const canvas = Canvas.createCanvas(WIDTH, HEIGHT);
     const ctx = canvas.getContext('2d');
     
-    images.reverse().forEach((img) => {
+    images.reverse().forEach((img, index) => {
         ctx.drawImage(bg, -2, -2);
         ctx.drawImage(img.image, -2, -2);
+        ctx.font = '15px Courier New';
+        ctx.fillText(pad(new Date(img.time).getHours().toString(), 2) + ":" + pad(new Date(img.time).getMinutes().toString(), 2), 15, 20);
         encoder.addFrame(ctx);
+
+        if (index === images.length - 1) {
+            encoder.addFrame(ctx);
+            encoder.addFrame(ctx);
+            encoder.addFrame(ctx);
+        }
     })
 
     encoder.finish();
